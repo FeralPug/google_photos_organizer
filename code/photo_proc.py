@@ -7,6 +7,9 @@ import calendar
 DEST_DIR = "script_output"
 TARGET_DIR = "test_dir"
 
+LOG = "log.txt"
+LOGFILE = None
+
 OTHER_PHOTOS_DIR = "other"
 
 def proc_dir(dirPath):
@@ -15,7 +18,7 @@ def proc_dir(dirPath):
         for file in os.listdir(directory):
             proc_file(file, dirPath)
     else:
-        print("Directory at " + dirPath + " is not a directory!")
+        print_and_log("Directory at " + dirPath + " is not a directory!")
             
 def proc_file(file, dirPath):
     fileName = os.fsdecode(file)
@@ -26,7 +29,7 @@ def proc_file(file, dirPath):
         fileDate = get_date_from_file_name(fileName)
         if(fileDate == None):
             #handle no date
-            print(fileName + " has no date associated")
+            print_and_log(fileName + " has no date associated")
             othersDir = os.path.join(DEST_DIR, OTHER_PHOTOS_DIR)
             check_and_create_dir(othersDir)
             outputFilePath = os.path.join(othersDir, fileName)
@@ -34,10 +37,10 @@ def proc_file(file, dirPath):
                 newName = create_double_file_name(fileName)
                 if(len(newName) != 0):
                     newOutputFilePath = os.path.join(othersDir, newName)
-                    print("File already exists at " + outputFilePath + " Creating double at " + newOutputFilePath)
+                    print_and_log("File already exists at " + outputFilePath + " Creating double at " + newOutputFilePath)
                     shutil.copy(fullPath, newOutputFilePath)  
                 else:
-                    print("File already exists at " + outputFilePath + " and has no extension, skipping")
+                    print_and_log("File already exists at " + outputFilePath + " and has no extension, skipping")
             else:
                 shutil.copy(fullPath, othersDir)          
         else:
@@ -55,10 +58,10 @@ def proc_file(file, dirPath):
                 newName = create_double_file_name(fileName)
                 if(len(newName) != 0):
                     newOutputFilePath = os.path.join(monthDir, newName)
-                    print("File already exists at " + outputFilePath + " Creating double at " + newOutputFilePath)
+                    print_and_log("File already exists at " + outputFilePath + " Creating double at " + newOutputFilePath)
                     shutil.copy(fullPath, newOutputFilePath) 
                 else:
-                    print("File already exists at " + outputFilePath + " and has no extension, skipping")
+                    print_and_log("File already exists at " + outputFilePath + " and has no extension, skipping")
             else:
                 shutil.copy(fullPath, monthDir)        
         
@@ -103,7 +106,7 @@ def validate_date(year, month, day) -> bool:
     
 def check_and_create_dir(path):
     if(not os.path.exists(path)):
-        print("Creating dir at " + path)
+        print_and_log("Creating dir at " + path)
         os.makedirs(path)
         
 def check_if_file_exists(path) -> bool:
@@ -112,20 +115,26 @@ def check_if_file_exists(path) -> bool:
     else:
         return False
         
-#def copy_file(src, dst):
+def print_and_log(text):
+    LOGFILE.write(text + '\n')
+    print(text)
 
 # START OF SCRIPT **************************************************************************************************
 
+print("creating log at " + LOG)
+LOGFILE = open(LOG, "w")
+
 #get running script path
-print("Running in path: " + os.path.dirname(os.path.abspath(__file__)))
+print_and_log("Running in path: " + os.path.dirname(os.path.abspath(__file__)))
 
 check_and_create_dir(DEST_DIR)
 
 if(os.path.isdir(TARGET_DIR)):
     proc_dir(TARGET_DIR)
 else:
-    print("Script Target Directory Does Not Exist, Check Script!")
+    print_and_log("Script Target Directory Does Not Exist, Check Script!")
     
+LOGFILE.close()
     
 #for the loop logic    
 #https://stackoverflow.com/questions/10377998/how-can-i-iterate-over-files-in-a-given-directory
